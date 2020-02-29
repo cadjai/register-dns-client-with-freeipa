@@ -1,0 +1,5 @@
+---
+# defaults file for register-dns-client-with-ipa
+ipa_client_packages:
+  - ipa-client
+  - vim

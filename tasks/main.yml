@@ -54,7 +54,7 @@
   ipa_host:
     name: "{{ hostvars[inventory_hostname]['ansible_nodename'] }}"
     ip_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] | default(hostvars[inventory_hostname]['ansible_all_ipv4_addresses'][0]) }}"
-    mac_address: "{{ ansible_default_ipv4.macaddress }}"
+    mac_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['macaddress'] }}"
     ipa_host: "{{ idm_host }}"
     ipa_port: "{{ idm_port }}"
     ipa_user: "{{ idm_admin_username }}"

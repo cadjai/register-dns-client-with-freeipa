@@ -50,6 +50,21 @@
     validate_certs: false
   register: ipa_client_zone_added
 
+- name: Add Kerberos TXT Record for the DNS Zone for the host domain
+  ipa_dnsrecord:
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_prot: "https"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    zone_name: "{{ hostvars[inventory_hostname]['ansible_nodename'].split('.')[1:4] | join('.') }}"
+    record_name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+    record_type: 'TXT'
+    record_value: "{{ hostvars[inventory_hostname]['ansible_nodename'].split('.')[1:4] | join('.') | upper }}"
+    state: present
+    validate_certs: false
+  register: ipa_client_dns_txt_kerberos_added
+
 - name: Add host to IPA 
   ipa_host:
     name: "{{ hostvars[inventory_hostname]['ansible_nodename'] }}"
@@ -95,6 +110,21 @@
     ipa_pass: "{{ idm_admin_password }}"
     validate_certs: false
   register: ipa_client_reverse_zone_added
+
+- name: Add Kerberos TXT Record for the DNS Zone for the host domain
+  ipa_dnsrecord:
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_prot: "https"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    zone_name: "{{ ((hostvars[inventory_hostname]['ansible_default_ipv4']['address'] | default(hostvars[inventory_hostname]['ansible_all_ipv4_addresses'][0])).split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
+    record_name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+    record_type: 'TXT'
+    record_value: "{{ ((hostvars[inventory_hostname]['ansible_default_ipv4']['address'] | default(hostvars[inventory_hostname]['ansible_all_ipv4_addresses'][0])).split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') | upper }}"
+    state: present
+    validate_certs: false
+  register: ipa_client_reverse_txt_kerberos_added
 
 - name: Add Reverse Lookup record for client host
   ipa_dnsrecord:

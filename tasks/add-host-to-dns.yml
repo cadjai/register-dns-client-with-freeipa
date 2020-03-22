@@ -2,10 +2,10 @@
 - name: Add DNS Zone for the host domain
   ipa_dnszone:
     zone_name: "{{ item.split('  ')[2] }}"
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     validate_certs: false
     state: present
     dynamicupdate: true
@@ -15,11 +15,11 @@
 
 - name: Add Kerberos TXT Record for the DNS Zone for the host domain
   ipa_dnsrecord:
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
     ipa_prot: "https"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     zone_name: "{{ item.split('  ')[2] }}"
     record_name: "_kerberos"
     record_type: 'TXT'
@@ -35,10 +35,10 @@
     name: "{{ item }}"
     ip_address: "{{ item }}"
     mac_address: "{{ item.split('  ')[3] }}"
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     update_dns: true
     validate_certs: false
   with_items:
@@ -51,11 +51,11 @@
 
 - name: Add DNS Record for client host
   ipa_dnsrecord:
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
     ipa_prot: "https"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     zone_name: "{{ hostvars[inventory_hostname]['ansible_dns']['search'][0] }}"
     record_name: "{{ item.split('  ')[1] }}"
     record_type: 'A'
@@ -69,10 +69,10 @@
 - name: Add DNS Zone for the reverse lookup address
   ipa_dnszone:
     zone_name: "{{ (item.split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     validate_certs: false
     state: present
     dynamicupdate: true
@@ -82,11 +82,11 @@
 
 - name: Add Kerberos TXT Record for the DNS Zone for the host domain
   ipa_dnsrecord:
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
     ipa_prot: "https"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     zone_name: "{{ (item.split('  ')[0].split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
     record_name: "_kerberos"
     record_type: 'TXT'
@@ -99,11 +99,11 @@
 
 - name: Add Reverse Lookup record for client host
   ipa_dnsrecord:
-    ipa_host: "{{ idm_host }}"
-    ipa_port: "{{ idm_port }}"
+    ipa_host: "{{ ipa_host }}"
+    ipa_port: "{{ ipa_port }}"
     ipa_prot: "https"
-    ipa_user: "{{ idm_admin_username }}"
-    ipa_pass: "{{ idm_admin_password }}"
+    ipa_user: "{{ ipa_admin_username }}"
+    ipa_pass: "{{ ipa_admin_password }}"
     zone_name: "{{ (item.split('  ')[0].split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.')}}"
     record_name: "{{ item.split('  ')[0].split('.')[3] | int }}"
     record_type: 'PTR'

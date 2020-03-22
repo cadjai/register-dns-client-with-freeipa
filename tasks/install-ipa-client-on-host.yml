@@ -18,7 +18,7 @@
   register: ipa_client_installed
 
 - name: Install IPA Client
-  command: "ipa-client-install --domain={{ idm_realm | lower }} --server={{ groups['idm_servers'][0] }} -U -p '{{ idm_admin_username }}' -w '{{ idm_admin_password }}' --enable-dns-updates"
+  command: "ipa-client-install --domain={{ ipa_realm | lower }} --server={{ ipa_host }} -U -p '{{ ipa_admin_username }}' -w '{{ ipa_admin_password }}' --enable-dns-updates"
   when:
     - hostvars[inventory_hostname]['ansible_os_family'] in ['RedHat', 'Debian']
   failed_when:

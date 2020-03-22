@@ -1,0 +1,28 @@
+- name: Install ipa-client packages
+  yum:
+    name: "{{ ipa_client_packages }}"
+    state: latest
+  when:
+    - hostvars[inventory_hostname]['ansible_os_family'] in ['RedHat']
+    - not hostvars[inventory_hostname]['ansible_facts']['pkg_mgr'] in ['apt']
+  register: ipa_client_installed
+
+- name: Install ipa-client packages
+  apt:
+    pkg:
+      - freeipa-client
+    state: latest
+  when:
+    - hostvars[inventory_hostname]['ansible_os_family'] in ['Debian']
+    - hostvars[inventory_hostname]['ansible_facts']['pkg_mgr'] in ['apt']
+  register: ipa_client_installed
+
+- name: Install IPA Client
+  command: "ipa-client-install --domain={{ idm_realm | lower }} --server={{ groups['idm_servers'][0] }} -U -p '{{ idm_admin_username }}' -w '{{ idm_admin_password }}' --enable-dns-updates"
+  when:
+    - hostvars[inventory_hostname]['ansible_os_family'] in ['RedHat', 'Debian']
+  failed_when:
+    - ipa_client_configured.rc > 3
+    - " 'IPA client is already configured on this system' in ipa_client_configured.stderr  "
+  register: ipa_client_configured
+

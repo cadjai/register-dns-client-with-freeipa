@@ -1,0 +1,114 @@
+---
+- name: Add DNS Zone for the host domain
+  ipa_dnszone:
+    zone_name: "{{ item.split('  ')[2] }}"
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    validate_certs: false
+    state: present
+    dynamicupdate: true
+  with_items:
+    - "{{ hosts_info }}"
+  register: ipa_client_zone_added
+
+- name: Add Kerberos TXT Record for the DNS Zone for the host domain
+  ipa_dnsrecord:
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_prot: "https"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    zone_name: "{{ item.split('  ')[2] }}"
+    record_name: "_kerberos"
+    record_type: 'TXT'
+    record_value: "{{ item.split('  ')[2] | upper }}"
+    state: present
+    validate_certs: false
+  with_items:
+    - "{{ hosts_info }}"
+  register: ipa_client_dns_txt_kerberos_added
+
+- name: Add host to IPA
+  ipa_host:
+    name: "{{ item }}"
+    ip_address: "{{ item }}"
+    mac_address: "{{ item.split('  ')[3] }}"
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    update_dns: true
+    validate_certs: false
+  with_items:
+    - "{{ hosts_info }}"
+  failed_when:
+    - ipa_client_added is defined
+    - ipa_client_added.msg is defined
+    - "not 'no modifications to be performed' in ipa_client_added.msg"
+  register: ipa_client_added
+
+- name: Add DNS Record for client host
+  ipa_dnsrecord:
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_prot: "https"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    zone_name: "{{ hostvars[inventory_hostname]['ansible_dns']['search'][0] }}"
+    record_name: "{{ item.split('  ')[1] }}"
+    record_type: 'A'
+    record_value: "{{ item split('  ')[0] }}"
+    state: present
+    validate_certs: false
+  with_items:
+    - "{{ hosts_info }}"
+  register: ipa_client_dns_added
+
+- name: Add DNS Zone for the reverse lookup address
+  ipa_dnszone:
+    zone_name: "{{ (item.split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    validate_certs: false
+    state: present
+    dynamicupdate: true
+  with_items:
+    - "{{ hosts_info }}"
+  register: ipa_client_reverse_zone_added
+
+- name: Add Kerberos TXT Record for the DNS Zone for the host domain
+  ipa_dnsrecord:
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_prot: "https"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    zone_name: "{{ (item.split('  ')[0].split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
+    record_name: "_kerberos"
+    record_type: 'TXT'
+    record_value: "{{ (item.split('  ')[0].split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') | upper }}"
+    state: present
+    validate_certs: false
+  with_items:
+    - "{{ hosts_info }}"
+  register: ipa_client_reverse_txt_kerberos_added
+
+- name: Add Reverse Lookup record for client host
+  ipa_dnsrecord:
+    ipa_host: "{{ idm_host }}"
+    ipa_port: "{{ idm_port }}"
+    ipa_prot: "https"
+    ipa_user: "{{ idm_admin_username }}"
+    ipa_pass: "{{ idm_admin_password }}"
+    zone_name: "{{ (item.split('  ')[0].split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.')}}"
+    record_name: "{{ item.split('  ')[0].split('.')[3] | int }}"
+    record_type: 'PTR'
+    record_value: "{{ item.split('  ')[1] }}"
+    validate_certs: false
+  with_items:
+    - "{{ hosts_info }}"
+  register: ipa_client_revrec_created

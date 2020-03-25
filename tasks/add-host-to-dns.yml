@@ -32,8 +32,8 @@
 
 - name: Add host to IPA
   ipa_host:
-    name: "{{ item }}"
-    ip_address: "{{ item }}"
+    name: "{{ item.split('  ')[1] }}"
+    ip_address: "{{ item.split('  ')[0] }}"
     mac_address: "{{ item.split('  ')[3] }}"
     ipa_host: "{{ ipa_host }}"
     ipa_port: "{{ ipa_port }}"
@@ -46,7 +46,7 @@
   failed_when:
     - ipa_client_added is defined
     - ipa_client_added.msg is defined
-    - "not 'no modifications to be performed' in ipa_client_added.msg"
+    - "not 'no modifications to be performed' in ipa_client_added.msg and not 'Reverse record for IP address' in ipa_client_added.msg"
   register: ipa_client_added
 
 - name: Add DNS Record for client host
@@ -56,7 +56,7 @@
     ipa_prot: "https"
     ipa_user: "{{ ipa_admin_username }}"
     ipa_pass: "{{ ipa_admin_password }}"
-    zone_name: "{{ hostvars[inventory_hostname]['ansible_dns']['search'][0] }}"
+    zone_name: "{{ item.split('  ')[2] }}"
     record_name: "{{ item.split('  ')[1] }}"
     record_type: 'A'
     record_value: "{{ item split('  ')[0] }}"
@@ -68,7 +68,7 @@
 
 - name: Add DNS Zone for the reverse lookup address
   ipa_dnszone:
-    zone_name: "{{ (item.split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
+    zone_name: "{{ (item.split('  ')[0].split('.')[0:3] | join('.') | ipaddr('revdns')).split('.')[1:6] | join('.') }}"
     ipa_host: "{{ ipa_host }}"
     ipa_port: "{{ ipa_port }}"
     ipa_user: "{{ ipa_admin_username }}"
@@ -111,4 +111,8 @@
     validate_certs: false
   with_items:
     - "{{ hosts_info }}"
+  failed_when:
+    - ipa_client_revrec_created is defined
+    - ipa_client_revrec_created.msg is defined
+    - "not 'no modifications to be performed' in ipa_client_revrec_created.msg and not 'Reverse record for IP address' in ipa_client_revrec_created.msg"
   register: ipa_client_revrec_created

@@ -59,7 +59,7 @@
     zone_name: "{{ item.split('  ')[2] }}"
     record_name: "{{ item.split('  ')[1] }}"
     record_type: 'A'
-    record_value: "{{ item split('  ')[0] }}"
+    record_value: "{{ item.split('  ')[0] }}"
     state: present
     validate_certs: false
   with_items:

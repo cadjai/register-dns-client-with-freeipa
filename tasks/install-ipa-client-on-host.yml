@@ -23,6 +23,6 @@
     - hostvars[inventory_hostname]['ansible_os_family'] in ['RedHat', 'Debian']
   failed_when:
     - ipa_client_configured.rc > 3
-    - " 'IPA client is already configured on this system' in ipa_client_configured.stderr  "
+    - " not 'IPA client is already configured on this system' in ipa_client_configured.stderr  "
   register: ipa_client_configured
 
